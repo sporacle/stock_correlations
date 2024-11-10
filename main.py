@@ -1,22 +1,39 @@
 import sys
+import time
+import requests, json, sys
 
 class TickerData:
     def __init__(self, ticker):
         self.ticker = ticker
         self.prices = []
 
-def get_live_ticker_data(ticker: str, api_key: str) -> TickerData:
+# Takes a ticker and an API key and gets the 100 day price history from AlphaVantage. Returns JSON dictionary.
+def get_live_ticker_data(ticker: str, api_key: str) -> any:
+    print("Calling AlphaVantage for ticker: ", ticker)
+    url = "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=" + ticker.upper() + "&apikey=" + api_key
+    response = requests.get(url)
+    time.sleep(1)
+    if response.status_code != 200 or "Time Series (Daily)" not in response.json():
+        print("Bad HTTP code: ", response.status_code)
+        exit()
+    if "Time Series (Daily)" not in response.json():
+        print("API Failure")
+        exit()
+    return response.json()
+
+def process_ticker_json(ticker_json: any) -> TickerData:
     pass
 
-# Debug functions ----
-
-def write_ticker_data(ticker_data: TickerData):
-    pass
+# Receives a ticker and live json data and writes the data to a file.
+# The file will always be the lower case ticker suffixed with ".json". This format is important as it will be how the
+# offline data reader finds the offline files later.
+def write_ticker_data(ticker: str, json_data: str):
+    filename: str = ticker.lower() + ".json"
+    with open(filename, 'w') as f:
+        json.dump(json_data, f)
 
 def read_ticker_data(ticker: str) -> TickerData:
     pass
-
-# End Debug functions -----
 
 def correlation(ticker1: TickerData, ticker2: TickerData) -> float:
     pass
@@ -35,12 +52,17 @@ if __name__ == "__main__":
     api_key: str = arguments[1]
     runmode: str = arguments[2]
     tickers: list[str] = arguments[3:]
+    # Gather data from AlphaVantage and perform correlation, data will not be stored.
     if runmode == "live":
         print("Running correlation using data from AlphaVantage...")
+    # Perform correlation analysis on offline data.
     elif runmode == "offline":
         print("Running correlation using offline data...")
         pass
+    # Gather JSON data from the given stocks and save them to the hard drive.
     elif runmode == "sample":
-        print("Gathering offline data from AlphaVantage...")
-        pass
+        print("Gathering offline data...")
+        for ticker in tickers:
+            ticker_json = get_live_ticker_data(ticker, api_key)
+            write_ticker_data(ticker, ticker_json)
     else: print_help()
