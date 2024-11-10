@@ -45,6 +45,7 @@ def print_help():
     print("  live: Gathers data from AlphaVantage and run correlation analysis on it.")
     print("  offline: Reads offline data from current directory, file names must be lowercase ticker.")
     print("  sample: Reads live ticker data from AlphaVantage and saves to current directory.")
+    exit()
 
 if __name__ == "__main__":
     arguments = sys.argv
