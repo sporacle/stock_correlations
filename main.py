@@ -13,6 +13,12 @@ class TickerData:
 
 # Takes a ticker and an API key and gets the 100 day price history from AlphaVantage. Returns JSON dictionary.
 def get_live_ticker_data(ticker: str, api_key: str) -> any:
+    # Check if offline data exists already
+    filename: str = ticker.lower() + ".json"
+    if os.path.exists(filename):
+        print("Offline data available for", ticker)
+        with open(filename, "r") as f: return json.load(f)
+    # Gather data from online.
     print("Calling AlphaVantage for ticker: ", ticker)
     url = "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=" + ticker.upper() + "&apikey=" + api_key
     response = requests.get(url)
