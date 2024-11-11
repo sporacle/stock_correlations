@@ -24,3 +24,19 @@ This mode includes two steps: gathering the data and correlating.
 - Running correlation: `python main.py <api key> offline <ticker1> <ticker2> ...`
 
 Offline data that is more than 1 day old will not produce accurate correlations.
+
+### Example Call
+```shell
+PS C:\Users\matts\stock_correlations> python main.py randomapikey live nke teck czr amd
+Running correlation using data from AlphaVantage...
+Offline data available for nke
+Offline data available for teck
+Calling AlphaVantage for ticker:  czr
+Offline data available for amd
+                    nke                 teck                czr                 amd
+nke                 1.0                 -0.6765             0.5116              -0.1873
+teck                -0.6765             1.0                 -0.5269             0.4059
+czr                 0.5116              -0.5269             1.0                 -0.3383
+amd                 -0.1873             0.4059              -0.3383             1.0
+PS C:\Users\matts\stock_correlations>
+```
