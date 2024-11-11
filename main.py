@@ -6,6 +6,9 @@ import sys
 import os
 import math
 
+TICKER_STRING_SIZE = 20
+LOOKBACK_DAYS = 300
+
 class TickerData:
     def __init__(self, ticker, prices):
         self.ticker = ticker
@@ -20,7 +23,8 @@ def get_live_ticker_data(ticker: str, api_key: str) -> any:
         with open(filename, "r") as f: return json.load(f)
     # Gather data from online.
     print("Calling AlphaVantage for ticker: ", ticker)
-    url = "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=" + ticker.upper() + "&apikey=" + api_key
+    url = ("https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=" + ticker.upper() +
+           "&outputsize=full&apikey=" + api_key)
     response = requests.get(url)
     time.sleep(1)
     if response.status_code != 200:
@@ -35,8 +39,14 @@ def get_live_ticker_data(ticker: str, api_key: str) -> any:
 def process_ticker_json(ticker: str, ticker_json: any) -> TickerData:
     time_series = ticker_json["Time Series (Daily)"]
     prices = []
+    remaining_days = LOOKBACK_DAYS
     for date in time_series:
+        if remaining_days == 0: break
         prices.append(float(time_series[date]["4. close"]))
+        remaining_days -= 1
+    if remaining_days != 0:
+        print("FATAL:", ticker, "does not have data going back", str(LOOKBACK_DAYS), "days")
+        exit()
     return TickerData(ticker, prices)
 
 # Receives a ticker and live json data and writes the data to a file.
@@ -64,6 +74,9 @@ def generate_empty_matrix(tickers: list) -> dict:
     return matrix
 
 def calculate_correlation(x: list, y: list) -> float:
+    if len(x) != len(y):
+        print("FATAL: Correlation matrix size mismatch ", len(x), "vs", len(y))
+        exit()
     x_bar = sum(x) / len(x)
     y_bar = sum(y) / len(y)
 
@@ -89,20 +102,19 @@ def generate_correlations(ticker_data_map: dict) -> dict:
 def print_correlations(matrix: dict) -> None:
     # Create ticker strings, all tickers must be the same length for readability.
     ticker_strings = {}
-    ticker_string_size = 20
     ticker_strings_list = []
     for ticker_i in matrix.keys():
-        ticker_string = ticker_i + " "*(ticker_string_size - len(ticker_i))
+        ticker_string = ticker_i + " "*(TICKER_STRING_SIZE - len(ticker_i))
         ticker_strings[ticker_i] = ticker_string
         ticker_strings_list.append(ticker_string)
     # Build matrix string represntation and print it.
-    print(" "*ticker_string_size + "".join(ticker_strings_list))
+    print(" "*TICKER_STRING_SIZE + "".join(ticker_strings_list))
     for ticker_i in matrix.keys():
         curr_str = ticker_strings[ticker_i]
         for ticker_j in matrix[ticker_i].keys():
             str_val = str(round(matrix[ticker_i][ticker_j], 4))
             str_val_len = len(str_val)
-            curr_str += str_val + " "*(ticker_string_size - str_val_len)
+            curr_str += str_val + " "*(TICKER_STRING_SIZE - str_val_len)
         print(curr_str)
 
 def print_help():
