@@ -16,6 +16,8 @@ calls to the AlphaVantage API
 
 This mode gathers live data from AlphaVantage and runs the correlation algorithm.
 
+`python main.py <api key> live <ticker1> <ticker2> ...`
+
 ### Offline Mode
 
 This mode includes two steps: gathering the data and correlating.
