@@ -22,3 +22,5 @@ This mode includes two steps: gathering the data and correlating.
 
 - Gathering offline data: `python main.py <api key> sample <ticker1> <ticker2> ...`
 - Running correlation: `python main.py <api key> offline <ticker1> <ticker2> ...`
+
+Offline data that is more than 1 day old will not produce accurate correlations.

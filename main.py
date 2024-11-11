@@ -118,6 +118,15 @@ if __name__ == "__main__":
     # Gather data from AlphaVantage and perform correlation, data will not be stored.
     if runmode == "live":
         print("Running correlation using data from AlphaVantage...")
+        for ticker in tickers:
+            ticker_json = get_live_ticker_data(ticker, api_key)
+            write_ticker_data(ticker, ticker_json)
+        ticker_data = {}
+        for ticker in tickers:
+            data: TickerData = read_offline_ticker_data(ticker)
+            ticker_data[ticker] = data
+        correlations = generate_correlations(ticker_data)
+        print_correlations(correlations)
 
     # Perform correlation analysis on offline data.
     elif runmode == "offline":
