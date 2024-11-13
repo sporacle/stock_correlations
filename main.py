@@ -5,6 +5,7 @@ import json
 import sys
 import os
 import math
+import csv
 
 TICKER_STRING_SIZE = 20
 LOOKBACK_DAYS = 300
@@ -57,6 +58,14 @@ def write_ticker_data(ticker: str, json_data: str):
     with open(filename, 'w') as f:
         json.dump(json_data, f)
 
+def write_ticker_csv(ticker_data_sets: list[TickerData]):
+    csv_data = []
+    for ticker_data in ticker_data_sets:
+        csv_data.append([ticker_data.ticker] + ticker_data.prices)
+    with open('output.csv', 'w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerows(csv_data)
+
 def read_offline_ticker_data(ticker: str) -> TickerData:
     filename: str = ticker.lower() + ".json"
     if not os.path.exists(filename):
@@ -98,7 +107,6 @@ def generate_correlations(ticker_data_map: dict) -> dict:
             matrix[ticker_i][ticker_j] = correlation
     return matrix
 
-
 def print_correlations(matrix: dict) -> None:
     # Create ticker strings, all tickers must be the same length for readability.
     ticker_strings = {}
@@ -124,6 +132,7 @@ def print_help():
     print("  live: Gathers data from AlphaVantage and run correlation analysis on it.")
     print("  offline: Reads offline data from current directory, file names must be lowercase ticker.")
     print("  sample: Reads live ticker data from AlphaVantage and saves to current directory.")
+    print("  csv: Outputs the stock price histories into a CSV file")
     exit()
 
 if __name__ == "__main__":
@@ -161,5 +170,14 @@ if __name__ == "__main__":
         for ticker in tickers:
             ticker_json = get_live_ticker_data(ticker, api_key)
             write_ticker_data(ticker, ticker_json)
+    # Gathers the stock history and outputs it as a CSV. This data can be imported to Sheets
+    elif runmode == "csv":
+        print("Writing stock history to CSV file...")
+        ticker_data_sets = []
+        for ticker in tickers:
+            ticker_json: dict = get_live_ticker_data(ticker, api_key)
+            ticker_data: TickerData = process_ticker_json(ticker, ticker_json)
+            ticker_data_sets.append(ticker_data)
+        write_ticker_csv(ticker_data_sets)
 
     else: print_help()

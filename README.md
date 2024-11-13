@@ -27,6 +27,12 @@ This mode includes two steps: gathering the data and correlating.
 
 Offline data that is more than 1 day old will not produce accurate correlations.
 
+### CSV Output Mode
+
+This mode is used to output the stocks' price history in CSV format.
+
+`python main.py <api key> live <ticker1> <ticker2> ...` -> output.csv
+
 ### Example Call
 ```shell
 PS C:\Users\matts\stock_correlations> python main.py randomapikey live nke teck czr amd
